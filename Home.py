@@ -6,5 +6,6 @@ st.markdown(
     """
 #
 - [DocumentGPT](/DocumentGPT)
+- [PrivateGPT](/PrivateGPT)
 """
 )
