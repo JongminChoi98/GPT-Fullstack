@@ -2,3 +2,5 @@
 .env
 .cache/
 .streamlit/
+/files
+.DS_Store

@@ -6,6 +6,7 @@ from langchain.chat_models import ChatOpenAI
 from langchain.prompts import ChatPromptTemplate
 from langchain.callbacks import StreamingStdOutCallbackHandler
 from langchain.schema import BaseOutputParser, output_parser
+import time
 
 
 class JsonOutputParser(BaseOutputParser):
@@ -26,6 +27,7 @@ st.title("QuizGPT")
 llm = ChatOpenAI(
     temperature=0.1,
     model="gpt-3.5-turbo-1106",
+    # model="gpt-4-1106-preview",
     streaming=True,
     callbacks=[StreamingStdOutCallbackHandler()],
 )
@@ -107,7 +109,7 @@ formatting_prompt = ChatPromptTemplate.from_messages(
                         {{
                             "answer": "Red",
                             "correct": False
-                        }}
+                        }},
                         {{
                             "answer": "Yellow",
                             "correct": False
@@ -115,7 +117,7 @@ formatting_prompt = ChatPromptTemplate.from_messages(
                         {{
                             "answer": "Green",
                             "correct": False
-                        }}
+                        }},
                         {{
                             "answer": "Blue",
                             "correct": True
@@ -128,15 +130,15 @@ formatting_prompt = ChatPromptTemplate.from_messages(
                         {{
                             "answer": "Baku",
                             "correct": False
-                        }}
+                        }},
                         {{
                             "answer": "Tbilisi",
                             "correct": True
-                        }}
+                        }},
                         {{
                             "answer": "Manila",
                             "correct": False
-                        }}
+                        }},
                         {{
                             "answer": "Beirut",
                             "correct": False
@@ -149,15 +151,15 @@ formatting_prompt = ChatPromptTemplate.from_messages(
                         {{
                             "answer": "2007",
                             "correct": False
-                        }}
+                        }},
                         {{
                             "answer": "2001",
                             "correct": False
-                        }}
+                        }},
                         {{
                             "answer": "2009",
                             "correct": True
-                        }}
+                        }},
                         {{
                             "answer": "1998",
                             "correct": False
@@ -170,15 +172,15 @@ formatting_prompt = ChatPromptTemplate.from_messages(
                         {{
                             "answer": "A Roman Emperor",
                             "correct": True
-                        }}
+                        }},
                         {{
                             "answer": "Painter",
                             "correct": False
-                        }}
+                        }},
                         {{
                             "answer": "Actor",
                             "correct": False
-                        }}
+                        }},
                         {{
                             "answer": "Model",
                             "correct": False

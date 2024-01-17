@@ -9,5 +9,6 @@ st.markdown(
 - [PrivateGPT](/PrivateGPT)
 - [QuizGPT](/QuizGPT)
 - [SiteGPT](/SiteGPT)
+- [MeetingGPT](/MeetingGPT)
 """
 )
