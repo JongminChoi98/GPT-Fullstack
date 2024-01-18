@@ -83,6 +83,8 @@ formatting_prompt = ChatPromptTemplate.from_messages(
      
     You format exam questions into JSON format.
     Answers with (o) are the correct ones.
+    In the Example Output. The correct value will be True or False.
+    Make sure the first letter of the correct value should be a capital letter.
      
     Example Input:
 
