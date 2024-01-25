@@ -1,9 +1,14 @@
+import json
+from operator import itemgetter
+
 import streamlit as st
 from langchain.callbacks.base import BaseCallbackHandler
 from langchain.chat_models import ChatOpenAI
 from langchain.document_loaders import UnstructuredFileLoader
 from langchain.embeddings import CacheBackedEmbeddings, OpenAIEmbeddings
+from langchain.memory import ConversationSummaryBufferMemory
 from langchain.prompts import ChatPromptTemplate
+from langchain.schema import messages_from_dict, messages_to_dict
 from langchain.schema.runnable import RunnableLambda, RunnablePassthrough
 from langchain.storage import LocalFileStore
 from langchain.text_splitter import CharacterTextSplitter
@@ -36,6 +41,18 @@ llm = ChatOpenAI(
         ChatCallbackHandler(),
     ],
 )
+
+memory_llm = ChatOpenAI(
+    temperature=0.1,
+)
+
+if "memory" not in st.session_state:
+    st.session_state["memory"] = ConversationSummaryBufferMemory(
+        llm=memory_llm,
+        max_token_limit=120,
+        memory_key="chat_history",
+        return_messages=True,
+    )
 
 
 @st.cache_data(show_spinner="Embedding file...")
@@ -70,6 +87,37 @@ def send_message(message, role, save=True):
         save_message(message, role)
 
 
+def save_memory(input, output):
+    st.session_state["chat_history"].append({"input": input, "output": output})
+
+
+def save_memory_on_file(memory_file_path):
+    history = st.session_state["memory"].chat_memory.messages
+    history = messages_to_dict(history)
+
+    with open(memory_file_path, "w") as f:
+        json.dump(history, f)
+
+
+def restore_memory():
+    for history in st.session_state["chat_history"]:
+        st.session_state["memory"].save_context(
+            {"input": history["input"]}, {"output": history["output"]}
+        )
+
+
+def load_json(path):
+    with open(path, "r") as f:
+        return json.load(f)
+
+
+@st.cache_data(show_spinner="Loading memory from file...")
+def load_memory_from_file(memory_file_path):
+    loaded_message = load_json(memory_file_path)
+    history = messages_from_dict(loaded_message)
+    st.session_state["memory"].chat_memory.messages = history
+
+
 def paint_history():
     for message in st.session_state["messages"]:
         send_message(
@@ -91,6 +139,10 @@ prompt = ChatPromptTemplate.from_messages(
             Answer the question using ONLY the following context. If you don't know the answer just say you don't know. DON'T make anything up.
             
             Context: {context}
+
+            And you will get about summaried context of previous chat. If it's empty you don't have to care 
+            
+            Previous-context: {chat_history}
             """,
         ),
         ("human", "{question}"),
@@ -119,6 +171,7 @@ with st.sidebar:
 if file:
     retriever = embed_file(file)
     send_message("I'm Ready!", "ai", save=False)
+    restore_memory()
     paint_history()
     message = st.chat_input("Ask anything about your file...")
     if message:
@@ -128,11 +181,19 @@ if file:
                 "context": retriever | RunnableLambda(format_docs),
                 "question": RunnablePassthrough(),
             }
+            | RunnablePassthrough.assign(
+                chat_history=RunnableLambda(
+                    st.session_state["memory"].load_memory_variables
+                )
+                | itemgetter("chat_history")
+            )
             | prompt
             | llm
         )
         with st.chat_message("ai"):
             response = chain.invoke(message)
+            save_memory(message, response.content)
 
 else:
     st.session_state["messages"] = []
+    st.session_state["chat_history"] = []
