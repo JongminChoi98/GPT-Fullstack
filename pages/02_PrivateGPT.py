@@ -30,7 +30,7 @@ class ChatCallbackHandler(BaseCallbackHandler):
 
 
 with st.sidebar:
-    option = st.selectbox("What model would you like you use?", ("llama2", "mistral"))
+    option = st.selectbox("What model would you like you use?", ("llama2", "mistral", "gemma"))
 
 
 llm = ChatOllama(
